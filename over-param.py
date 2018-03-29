@@ -13,7 +13,8 @@ import numpy as np
 from torch.autograd import Variable
 from torch import nn, optim
 from torch.utils.data import DataLoader, Dataset
-from torchvision import transforms, models
+from torchvision import transforms
+from models import resnet
 
 use_gpu = torch.cuda.is_available()
 
