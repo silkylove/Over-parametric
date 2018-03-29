@@ -14,12 +14,12 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from cifar import CIFAR10
 from models import resnet, alexnet, inceptions, vgg
-from utils import AverageMeter, accuracy, ImageTransformations, LabelTransformations
+from utils import AverageMeter, accuracy, ImageTransformations, LabelTransformations, Logger
 
 use_gpu = torch.cuda.is_available()
 
 
-def train_model(model, criterion, optimizer, scheduler, num_epochs=60):
+def train_model(model, criterion, optimizer, scheduler,log_saver, num_epochs=60):
     since = time.time()
 
     for epoch in range(num_epochs):
@@ -31,7 +31,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=60):
         scheduler.step()
         model.train(True)
 
-        for data in training_loader:
+        for i,data in enumerate(training_loader):
             inputs, labels = data
             if use_gpu:
                 inputs = Variable(inputs.cuda())
@@ -50,6 +50,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=60):
 
             loss_meter.update(loss.data[0], BATCH_SIZE)
             acc_meter.update(accuracy(outputs.data, labels.data))
+
+            log_saver.log(epoch*i+bat)
 
         epoch_loss = loss_meter.avg
         epoch_acc = acc_meter.avg
@@ -75,8 +77,6 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=60):
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
 
-    return model
-
 
 root = './'
 BATCH_SIZE = 128
@@ -93,4 +93,4 @@ inception = inceptions.GoogLeNet()
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(resnet18.parameters(), lr=0.01, momentum=0.9, weight_decay=weight_decay)
-exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=len(training_dataset) // BATCH_SIZE, gamma=0.95)
+exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)

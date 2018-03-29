@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from torch.autograd import Variable
+from torchvision import transforms
 
 
 class AverageMeter(object):
@@ -43,13 +44,31 @@ def accuracy(output, target, topk=(1,)):
     return res
 
 
+class Logger(object):
+    def __init__(self, name):
+        self.reset()
+        self.name = name
+
+    def reset(self):
+        self.epoch_logger = []
+        self.loss_logger = []
+        self.acc_logger = []
+
+    def log(self, epoch, loss, acc):
+        self.epoch_logger.append(epoch)
+        self.loss_logger.append(loss)
+        self.acc_logger.append(acc)
+
+
 class Transformations():
 
     def __init__(self, mode='random'):
         self.mode = mode
 
     def __call__(self, data):
-        pass
+        transform_test = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))])
 
 
 class ImageTransformations(Transformations):
