@@ -79,7 +79,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=60):
 
 
 root = './'
-BATCH_SIZE = 100
+BATCH_SIZE = 128
 weight_decay = 0.
 img_transforms = ImageTransformations(mode='random')
 label_transforms = LabelTransformations(mode='random')
