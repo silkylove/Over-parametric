@@ -62,20 +62,25 @@ class Logger(object):
 
 class Transformations():
 
-    def __init__(self, mode='random'):
+    def __init__(self, mode=None):
         self.mode = mode
 
     def __call__(self, data):
         transform_test = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))])
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))])
 
 
 class ImageTransformations(Transformations):
 
     def __call__(self, image):
-        pass
-
+        image = transforms.ToTensor()(image)
+        image = transforms.Normalize((0.4914, 0.4822, 0.4465),
+                                     (0.2023, 0.1994, 0.2010))(image)
+        if self.mode == None:
+            return image
+        elif self.mode == 'random':
+            image=F.pixel_shuffle(image,1)
 
 class LabelTransformations(Transformations):
 
