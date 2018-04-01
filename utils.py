@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 __author__ = 'huangyf'
 
+import numpy as np
+from PIL import Image
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -62,27 +64,50 @@ class Logger(object):
 
 class Transformations():
 
-    def __init__(self, mode=None):
+    def __init__(self, mode=None, mean_var=None):
+        '''
+        :param mode: None,random,shuffled,gaussian
+        :param mean_var: only used for image and mode = gaussian
+        '''
         self.mode = mode
 
+        self.mean_var = mean_var
+
     def __call__(self, data):
-        transform_test = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))])
+        pass
 
 
 class ImageTransformations(Transformations):
 
     def __call__(self, image):
+        h, w, c = image.shape
+        if self.mode == None:
+            image = image
+        elif self.mode == 'shuffled':
+            np.random.seed(0)
+            image = np.random.permutation(image.reshape(-1, )).reshape(h, w, c)
+        elif self.mode == 'random':
+            image = np.random.permutation(image.reshape(-1, )).reshape(h, w, c)
+        elif self.mode == 'gaussian':
+            image = np.random.randn(h, w, c) * self.mean_var[1] + self.mean_var[0]
+
+        image = Image.fromarray(image)
+
         image = transforms.ToTensor()(image)
         image = transforms.Normalize((0.4914, 0.4822, 0.4465),
                                      (0.2023, 0.1994, 0.2010))(image)
-        if self.mode == None:
-            return image
-        elif self.mode == 'random':
-            image=F.pixel_shuffle(image,1)
+        return image
+
 
 class LabelTransformations(Transformations):
 
     def __call__(self, label):
-        pass
+        if self.mode == None:
+            return label
+        elif self.mode == 'random':
+            label = np.random.randint(0, 10)
+        elif self.mode == 'partially':
+            p = 0.5
+            if np.random.uniform(0, 1) > p:
+                label = np.random.randint(0, 10)
+        return label
