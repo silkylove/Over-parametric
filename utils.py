@@ -64,9 +64,9 @@ class Logger(object):
 
 class Transformations():
 
-    def __init__(self, mode=None, mean_var=None):
+    def __init__(self, mode='normal', mean_var=None):
         '''
-        :param mode: None,random,shuffled,gaussian
+        :param mode: normal,random,shuffled,gaussian
         :param mean_var: only used for image and mode = gaussian
         '''
         self.mode = mode
@@ -81,7 +81,7 @@ class ImageTransformations(Transformations):
 
     def __call__(self, image):
         h, w, c = image.shape
-        if self.mode == None:
+        if self.mode == 'normal':
             image = image
         elif self.mode == 'shuffled':
             np.random.seed(0)
@@ -102,7 +102,7 @@ class ImageTransformations(Transformations):
 class LabelTransformations(Transformations):
 
     def __call__(self, label):
-        if self.mode == None:
+        if self.mode == 'normal':
             return label
         elif self.mode == 'random':
             label = np.random.randint(0, 10)

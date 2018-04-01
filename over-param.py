@@ -19,7 +19,7 @@ from utils import AverageMeter, accuracy, ImageTransformations, LabelTransformat
 use_gpu = torch.cuda.is_available()
 
 
-def train_model(model, criterion, optimizer, scheduler, log_saver, num_epochs=60):
+def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epochs=60):
     since = time.time()
     steps = 0
 
@@ -66,14 +66,15 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, num_epochs=60
         if epoch % 10 == 0 or epoch == num_epochs - 1:
             print('Saving..')
             state = {
-                'net': model.module if use_gpu else model,
+                'net': model,
                 'loss': epoch_loss,
                 'acc': epoch_acc,
                 'epoch': epoch,
+                'log': log_saver
             }
             if not os.path.isdir('checkpoint'):
                 os.mkdir('checkpoint')
-            torch.save(state, './checkpoint/ckpt_epoch_{}.t7'.format(epoch))
+            torch.save(state, './checkpoint/{}_{}_ckpt_epoch_{}.t7'.format(mode[0], mode[1], epoch))
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     root = './'
     BATCH_SIZE = 128
     weight_decay = 0.
-    mode = ['random', None]
+    mode = ['normal', 'normal']
     img_transforms = ImageTransformations(mode=mode[0])
     label_transforms = LabelTransformations(mode=mode[1])
     training_dataset = CIFAR10(root, train=True, transform=img_transforms, target_transform=label_transforms)
@@ -105,4 +106,4 @@ if __name__ == "__main__":
     exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
     log = Logger('train')
 
-    model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, num_epochs=10)
+    model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=1)
