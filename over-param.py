@@ -2,6 +2,7 @@
 __author__ = 'huangyf'
 
 import os
+import sys
 import pickle
 import torch
 import time
@@ -97,9 +98,9 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
                 'acc_test': acc_meter_test.avg,
                 'log': log_saver
             }
-            if not os.path.isdir('checkpoint'):
-                os.mkdir('checkpoint')
-            torch.save(state, './checkpoint/{}_{}_ckpt_epoch_{}.t7'.format(mode[0], mode[1], epoch))
+            if not os.path.isdir('checkpoint_{}'.format(mode[2])):
+                os.mkdir('checkpoint_{}'.format(mode[2]))
+            torch.save(state, './checkpoint_{}/{}_{}_ckpt_epoch_{}.t7'.format(mode[2], mode[0], mode[1], epoch))
 
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
@@ -107,36 +108,39 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
     return model, log_saver
 
 
-if __name__ == "__main__":
-    root = './'
-    BATCH_SIZE = 128
-    weight_decay = 0.
-    mode = ['normal', 'normal']
-    img_transforms = ImageTransformations(mode=mode[0])
-    label_transforms = LabelTransformations(mode=mode[1])
-    training_dataset = CIFAR10(root, train=True, transform=img_transforms, target_transform=label_transforms)
-    training_loader = DataLoader(training_dataset, BATCH_SIZE, shuffle=True, pin_memory=True)
+root = './'
+BATCH_SIZE = 128
+weight_decay = 0.
 
-    testing_dataset = CIFAR10(root, train=False, transform=transforms.Compose([Image.fromarray, transforms.ToTensor(),
-                                                                               transforms.Normalize(
-                                                                                   (0.4914, 0.4822, 0.4465),
-                                                                                   (0.2023, 0.1994, 0.2010))]))
-    testing_loader = DataLoader(testing_dataset, BATCH_SIZE, shuffle=False, pin_memory=True)
+for mode1 in ['normal', 'random', 'shuffled']:
+    for mode2 in ['normal', 'random', 'partially']:
+        img_transforms = ImageTransformations(mode=mode1)
+        label_transforms = LabelTransformations(mode=mode2)
+        training_dataset = CIFAR10(root, train=True, transform=img_transforms, target_transform=label_transforms)
+        training_loader = DataLoader(training_dataset, BATCH_SIZE, shuffle=True, pin_memory=True)
 
-    loaders = {'train': training_loader, 'test': testing_loader}
+        testing_dataset = CIFAR10(root, train=False,
+                                  transform=transforms.Compose([Image.fromarray, transforms.ToTensor(),
+                                                                transforms.Normalize(
+                                                                    (0.4914, 0.4822, 0.4465),
+                                                                    (0.2023, 0.1994, 0.2010))]))
+        testing_loader = DataLoader(testing_dataset, BATCH_SIZE, shuffle=False, pin_memory=True)
 
-    resnet18 = resnet.ResNet18()
-    vgg16 = vgg.VGG('VGG16')
-    alex = alexnet.alexnet()
-    inception = inceptions.GoogLeNet()
+        loaders = {'train': training_loader, 'test': testing_loader}
 
-    model = resnet18
-    if use_gpu:
-        model = resnet18.cuda()
+        resnet18 = resnet.ResNet18()
+        vgg16 = vgg.VGG('VGG16')
+        alex = alexnet.alexnet()
+        inception = inceptions.GoogLeNet()
 
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=weight_decay)
-    exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
-    log = Logger(mode)
+        model = resnet18
+        if use_gpu:
+            model = resnet18.cuda()
 
-    model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=2)
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=weight_decay)
+        exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
+        mode = [mode1, mode2, 'resnet']
+        log = Logger(mode)
+
+        model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=60)
