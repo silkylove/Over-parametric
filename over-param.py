@@ -66,20 +66,20 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
                     loss_meter.update(loss.data[0], outputs.size(0))
                     acc_meter.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
                     steps += 1
-
                     log_saver.log_train(steps, loss_meter.avg, acc_meter.avg)
+
                 else:
                     loss_meter_test.update(loss.data[0], outputs.size(0))
                     acc_meter_test.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
 
-                    log_saver.log_test(steps, loss_meter_test.avg, acc_meter_test.avg)
-
             if phase == 'train':
                 epoch_loss = loss_meter.avg
                 epoch_acc = acc_meter.avg
+
             else:
                 epoch_loss = loss_meter_test.avg
                 epoch_acc = acc_meter_test.avg
+                log_saver.log_test(steps, loss_meter_test.avg, acc_meter_test.avg)
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
