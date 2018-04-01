@@ -24,42 +24,65 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
     steps = 0
 
     for epoch in range(num_epochs):
-        print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+        print('Epoch {}/{}'.format(epoch + 1, num_epochs))
         print('-' * 10)
+
         loss_meter = AverageMeter()
         acc_meter = AverageMeter()
 
-        scheduler.step()
-        model.train(True)
+        loss_meter_test = AverageMeter()
+        acc_meter_test = AverageMeter()
 
-        for i, data in enumerate(training_loader):
-            inputs, labels = data
-            if use_gpu:
-                inputs = Variable(inputs.cuda())
-                labels = Variable(labels.cuda())
+        for phase in ['train', 'test']:
+
+            if phase == 'train':
+                scheduler.step()
+                model.train(True)
             else:
-                inputs, labels = Variable(inputs), Variable(labels)
+                model.train(False)
 
-            optimizer.zero_grad()
+            for i, data in enumerate(loaders[phase]):
+                inputs, labels = data
+                if use_gpu:
+                    inputs = inputs.cuda()
+                    labels = labels.cuda()
+                if phase == 'train':
+                    inputs = Variable(inputs)
+                    labels = Variable(labels)
+                else:
+                    inputs = Variable(inputs, volatile=True)
+                    labels = Variable(labels, volatile=True)
 
-            outputs = model(inputs)
-            _, preds = torch.max(outputs.data, 1)
-            loss = criterion(outputs, labels)
+                optimizer.zero_grad()
 
-            loss.backward()
-            optimizer.step()
+                outputs = model(inputs)
+                _, preds = torch.max(outputs.data, 1)
+                loss = criterion(outputs, labels)
 
-            loss_meter.update(loss.data[0], outputs.size(0))
-            acc_meter.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
-            steps += 1
+                if phase == 'train':
+                    loss.backward()
+                    optimizer.step()
 
-            log_saver.log(steps, loss_meter.avg, acc_meter.avg)
+                    loss_meter.update(loss.data[0], outputs.size(0))
+                    acc_meter.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
+                    steps += 1
 
-        epoch_loss = loss_meter.avg
-        epoch_acc = acc_meter.avg
+                    log_saver.log_train(steps, loss_meter.avg, acc_meter.avg)
+                else:
+                    loss_meter_test.update(loss.data[0], outputs.size(0))
+                    acc_meter_test.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
 
-        print('{} Loss: {:.4f} Acc: {:.4f}'.format(
-            'train', epoch_loss, epoch_acc))
+                    log_saver.log_test(loss_meter_test.avg, acc_meter_test.avg)
+
+            if phase == 'train':
+                epoch_loss = loss_meter.avg
+                epoch_acc = acc_meter.avg
+            else:
+                epoch_loss = loss_meter_test.avg
+                epoch_acc = acc_meter_test.avg
+
+            print('{} Loss: {:.4f} Acc: {:.4f}'.format(
+                phase, epoch_loss, epoch_acc))
 
         print()
 
@@ -67,9 +90,11 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
             print('Saving..')
             state = {
                 'net': model,
-                'loss': epoch_loss,
-                'acc': epoch_acc,
                 'epoch': epoch,
+                'loss': loss_meter.avg,
+                'acc': acc_meter.avg,
+                'loss_test': loss_meter_test.avg,
+                'acc_test': acc_meter_test.avg,
                 'log': log_saver
             }
             if not os.path.isdir('checkpoint'):
@@ -92,6 +117,14 @@ if __name__ == "__main__":
     training_dataset = CIFAR10(root, train=True, transform=img_transforms, target_transform=label_transforms)
     training_loader = DataLoader(training_dataset, BATCH_SIZE, shuffle=True, pin_memory=True)
 
+    testing_dataset = CIFAR10(root, train=False, transform=transforms.Compose([Image.fromarray, transforms.ToTensor(),
+                                                                               transforms.Normalize(
+                                                                                   (0.4914, 0.4822, 0.4465),
+                                                                                   (0.2023, 0.1994, 0.2010))]))
+    testing_loader = DataLoader(testing_dataset, BATCH_SIZE, shuffle=False, pin_memory=True)
+
+    loaders = {'train': training_loader, 'test': testing_loader}
+
     resnet18 = resnet.ResNet18()
     vgg16 = vgg.VGG('VGG16')
     alex = alexnet.alexnet()
@@ -104,6 +137,6 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=weight_decay)
     exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
-    log = Logger('train')
+    log = Logger(mode)
 
-    model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=1)
+    model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=2)

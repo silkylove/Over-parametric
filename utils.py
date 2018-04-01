@@ -55,11 +55,17 @@ class Logger(object):
         self.epoch_logger = []
         self.loss_logger = []
         self.acc_logger = []
+        self.loss_logger_test = []
+        self.acc_logger_test = []
 
-    def log(self, epoch, loss, acc):
+    def log_train(self, epoch, loss, acc):
         self.epoch_logger.append(epoch)
         self.loss_logger.append(loss)
         self.acc_logger.append(acc)
+
+    def log_test(self, loss, acc):
+        self.loss_logger_test.append(loss)
+        self.acc_logger_test.append(acc)
 
 
 class Transformations():
