@@ -151,7 +151,7 @@ for mode1 in mode1_set:
 
 def plot(title):
     def get_fig(i):
-        fig = plt.figure(i, figsize=(10, 5))
+        fig = plt.figure(i, figsize=(20, 10))
         ax = fig.add_subplot(111)
         ax.set_title(title)
         return fig, ax
