@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from cifar import CIFAR10
 from models import resnet, alexnet, inceptions, vgg
-from utils import AverageMeter, accuracy, ImageTransformations, LabelTransformations, Logger
+from utils import AverageMeter, accuracy, Logger
 
 use_gpu = torch.cuda.is_available()
 
@@ -118,16 +118,14 @@ mode2_set = ['normal', 'random', 'partially']
 
 for mode1 in mode1_set:
     for mode2 in mode2_set:
-        img_transforms = ImageTransformations(mode=mode1)
-        label_transforms = LabelTransformations(mode=mode2)
-        training_dataset = CIFAR10(root, train=True, transform=img_transforms, target_transform=label_transforms)
+        img_transforms = transforms.Compose([transforms.ToTensor(),
+                                             transforms.Normalize(
+                                                 (0.4914, 0.4822, 0.4465),
+                                                 (0.2023, 0.1994, 0.2010))])
+        training_dataset = CIFAR10(root, train=True, transform=img_transforms, image_mode=mode1, label_mode=mode2)
         training_loader = DataLoader(training_dataset, BATCH_SIZE, shuffle=True, pin_memory=True)
 
-        testing_dataset = CIFAR10(root, train=False,
-                                  transform=transforms.Compose([Image.fromarray, transforms.ToTensor(),
-                                                                transforms.Normalize(
-                                                                    (0.4914, 0.4822, 0.4465),
-                                                                    (0.2023, 0.1994, 0.2010))]))
+        testing_dataset = CIFAR10(root, train=False, transform=img_transforms)
         testing_loader = DataLoader(testing_dataset, BATCH_SIZE, shuffle=False, pin_memory=True)
 
         loaders = {'train': training_loader, 'test': testing_loader}
