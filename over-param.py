@@ -112,9 +112,11 @@ root = './'
 BATCH_SIZE = 128
 weight_decay = 0.
 num_epochs = 60
+mode1_set = ['normal', 'random', 'shuffled']
+mode2_set = ['normal', 'random', 'partially']
 
-for mode1 in ['normal', 'random', 'shuffled']:
-    for mode2 in ['normal', 'random', 'partially']:
+for mode1 in mode1_set:
+    for mode2 in mode2_set:
         img_transforms = ImageTransformations(mode=mode1)
         label_transforms = LabelTransformations(mode=mode2)
         training_dataset = CIFAR10(root, train=True, transform=img_transforms, target_transform=label_transforms)
@@ -148,40 +150,43 @@ for mode1 in ['normal', 'random', 'shuffled']:
 
 
 def plot(title):
-    checkpoints = os.listdir('./checkpoint_{}'.format(title))
-    fig = plt.figure(1, figsize=(20, 10))
-    fig.suptitle(title)
+    def get_fig(i):
+        fig = plt.figure(i, figsize=(10, 5))
+        ax = fig.add_subplot(111)
+        ax.set_title(title)
+        return fig, ax
 
-    ax_train_loss = fig.add_subplot(221)
-    ax_test_loss = fig.add_subplot(222)
-    ax_train_acc = fig.add_subplot(223)
-    ax_test_acc = fig.add_subplot(224)
-    lines = []
-    labels = []
-    for checkpoint in checkpoints:
-        if int(checkpoint.split('_')[-1].split('.')[0]) != num_epochs - 1:
-            continue
-        mode = checkpoint.split('_')[:2]
-        state = torch.load(os.path.join('./checkpoint_{}'.format(title), checkpoint))
-        # num_params=sum(p.numel() for p in state['net'].parameters() if p.requires_grad)
-        log = state['log']
-        labels.append(mode[0] + '-' + mode[1])
-        line = ax_train_loss.plot(log.step_logger, log.loss_logger)
-        lines.append(line[0])
-        ax_train_acc.plot(log.step_logger, log.acc_logger)
-        ax_test_loss.plot(log.step_logger_test, log.loss_logger_test)
-        ax_test_acc.plot(log.step_logger_test, log.acc_logger_test)
-    for ax in [ax_train_loss, ax_train_acc, ax_test_loss, ax_test_acc]:
+    fig1, ax1 = get_fig(1)
+    fig2, ax2 = get_fig(2)
+    fig3, ax3 = get_fig(3)
+    fig4, ax4 = get_fig(4)
+
+    for mode1 in mode1_set:
+        for mode2 in mode2_set:
+            state = torch.load('./checkpoint_{}/{}_{}_ckpt_epoch_{}.t7'.format(title, mode1, mode2, num_epochs - 1))
+            log = state['log']
+            label = mode1 + '-' + mode2
+            ax1.plot(log.step_logger, log.loss_logger, label=label)
+            ax2.plot(log.step_logger, log.acc_logger, label=label)
+            ax3.plot(log.step_logger_test, log.loss_logger_test, label=label)
+            ax4.plot(log.step_logger_test, log.acc_logger_test, label=label)
+
+    for ax in [ax1, ax2, ax3, ax4]:
         ax.set_xlim(0, len(log.step_logger))
         ax.set_xlabel('steps')
+        ax.legend(loc='upper right')
 
-    ax_train_loss.set_ylabel('train_loss')
-    ax_train_acc.set_ylabel('train acc')
-    ax_test_loss.set_ylabel('test loss')
-    ax_test_acc.set_ylabel('test acc')
+    ax1.set_ylabel('train loss')
+    ax2.set_ylabel('train acc')
+    ax3.set_ylabel('test loss')
+    ax4.set_ylabel('test acc')
 
-    fig.legend(lines, labels, loc='upper left')
-    plt.savefig('comparision.png')
+    fig1.savefig(title + '-train-loss.png')
+    fig2.savefig(title + '-train-acc.png')
+    fig3.savefig(title + '-test-loss.png')
+    fig4.savefig(title + '-test-acc.png')
 
 
 plot('resnet')
+plt.show()
+plt.close()
