@@ -111,6 +111,7 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
 root = './'
 BATCH_SIZE = 128
 weight_decay = 0.
+num_epochs = 60
 
 for mode1 in ['normal', 'random', 'shuffled']:
     for mode2 in ['normal', 'random', 'partially']:
@@ -143,4 +144,44 @@ for mode1 in ['normal', 'random', 'shuffled']:
         mode = [mode1, mode2, 'resnet']
         log = Logger(mode)
 
-        model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=60)
+        model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=num_epochs)
+
+
+def plot(title):
+    checkpoints = os.listdir('./checkpoint_{}'.format(title))
+    fig = plt.figure(1, figsize=(20, 10))
+    fig.suptitle(title)
+
+    ax_train_loss = fig.add_subplot(221)
+    ax_test_loss = fig.add_subplot(222)
+    ax_train_acc = fig.add_subplot(223)
+    ax_test_acc = fig.add_subplot(224)
+    lines = []
+    labels = []
+    for checkpoint in checkpoints:
+        if int(checkpoint.split('_')[-1].split('.')[0]) != num_epochs - 1:
+            continue
+        mode = checkpoint.split('_')[:2]
+        state = torch.load(os.path.join('./checkpoint_{}'.format(title), checkpoint))
+        # num_params=sum(p.numel() for p in state['net'].parameters() if p.requires_grad)
+        log = state['log']
+        labels.append(mode[0] + '-' + mode[1])
+        line = ax_train_loss.plot(log.step_logger, log.loss_logger)
+        lines.append(line[0])
+        ax_train_acc.plot(log.step_logger, log.acc_logger)
+        ax_test_loss.plot(log.step_logger_test, log.loss_logger_test)
+        ax_test_acc.plot(log.step_logger_test, log.acc_logger_test)
+    for ax in [ax_train_loss, ax_train_acc, ax_test_loss, ax_test_acc]:
+        ax.set_xlim(0, len(log.step_logger))
+        ax.set_xlabel('steps')
+
+    ax_train_loss.set_ylabel('train_loss')
+    ax_train_acc.set_ylabel('train acc')
+    ax_test_loss.set_ylabel('test loss')
+    ax_test_acc.set_ylabel('test acc')
+
+    fig.legend(lines, labels, loc='upper left')
+    plt.savefig('comparision.png')
+
+
+plot('resnet')
