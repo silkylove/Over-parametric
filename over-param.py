@@ -112,12 +112,13 @@ root = './'
 lr = 0.1
 BATCH_SIZE = 128
 weight_decay = 0.
-num_epochs = 60
+num_epochs = 1
 mode1_set = ['normal', 'random', 'shuffled']
 mode2_set = ['normal', 'random', 'partially']
 
 for mode1 in mode1_set:
     for mode2 in mode2_set:
+        print(mode1, ' and ', mode2, ' :')
         img_transforms = transforms.Compose([transforms.ToTensor(),
                                              transforms.Normalize(
                                                  (0.4914, 0.4822, 0.4465),
