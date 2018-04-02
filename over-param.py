@@ -109,6 +109,7 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
 
 
 root = './'
+lr = 0.1
 BATCH_SIZE = 128
 weight_decay = 0.
 num_epochs = 60
@@ -141,7 +142,7 @@ for mode1 in mode1_set:
             model = resnet18.cuda()
 
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=weight_decay)
+        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decay)
         exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
         mode = [mode1, mode2, 'resnet']
         log = Logger(mode)
