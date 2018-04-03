@@ -143,6 +143,7 @@ for mode1 in mode1_set:
         inception = inceptions.GoogLeNet()
 
         exec('model={}'.format(model_name))
+
         if use_gpu:
             model = resnet18.cuda()
 
