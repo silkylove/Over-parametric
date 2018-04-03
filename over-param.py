@@ -106,6 +106,7 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
+
     return model, log_saver
 
 
