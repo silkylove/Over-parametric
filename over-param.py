@@ -101,8 +101,11 @@ BATCH_SIZE = 128
 weight_decay = 0.
 num_epochs = 60
 
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
 ## 'vgg16','resnet18','alex','inception'
-model_name = 'resnet18'
+model_name = 'vgg16'
 
 mode_set = [('normal', 'normal'), ('normal', 'random'), ('normal', 'partially-0.1'),
             ('normal', 'partially-0.3'), ('normal', 'partially-0.5'), ('normal', 'partially-0.7'),
