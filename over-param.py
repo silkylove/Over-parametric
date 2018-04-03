@@ -17,9 +17,6 @@ from cifar import CIFAR10
 from models import resnet, alexnet, inceptions, vgg
 from utils import AverageMeter, accuracy, Logger
 
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-
 use_gpu = torch.cuda.is_available()
 
 
@@ -98,94 +95,102 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
     return model, log_saver
 
 
-root = './'
-lr = 0.1
-BATCH_SIZE = 128
-weight_decay = 0.
-num_epochs = 60
+if __name__ == "__main__":
 
-## 'vgg16','resnet18','alex','inception'
-model_name = 'vgg16'
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-mode_set = [('normal', 'normal'), ('normal', 'random'), ('normal', 'partially-0.1'),
-            ('normal', 'partially-0.3'), ('normal', 'partially-0.5'), ('normal', 'partially-0.7'),
-            ('normal', 'partially-0.9'), ('random', 'normal'), ('shuffled', 'normal'), ('gaussian', 'normal')]
+    ## 'vgg16','resnet18','alex','inception'
+    model_name = 'resnet18'
 
-for (mode1, mode2) in mode_set:
-    print(mode1, ' and ', mode2, ' :')
-    img_transforms = transforms.Compose([transforms.ToTensor(),
-                                         transforms.Normalize(
-                                             (0.4914, 0.4822, 0.4465),
-                                             (0.2023, 0.1994, 0.2010))])
-    training_dataset = CIFAR10(root, train=True, transform=img_transforms, image_mode=mode1, label_mode=mode2)
-    training_loader = DataLoader(training_dataset, BATCH_SIZE, shuffle=True, pin_memory=True)
+    root = './'
+    lr = 0.1
+    BATCH_SIZE = 128
+    weight_decay = 0.
+    num_epochs = 60
 
-    testing_dataset = CIFAR10(root, train=False, transform=img_transforms)
-    testing_loader = DataLoader(testing_dataset, BATCH_SIZE, shuffle=False, pin_memory=True)
-
-    loaders = {'train': training_loader, 'test': testing_loader}
-
-    resnet18 = resnet.ResNet18()
-    vgg16 = vgg.VGG('VGG16')
-    alex = alexnet.alexnet()
-    inception = inceptions.GoogLeNet()
-
-    exec('model={}'.format(model_name))
-
-    if use_gpu:
-        model = resnet18.cuda()
-
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decay)
-    exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
-
-    mode = [mode1, mode2, model_name]
-    log = Logger(mode)
-
-    model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=num_epochs)
-
-
-def plot(title):
-    fontdict = {'size': 30}
-
-    def get_fig(i):
-        fig = plt.figure(i, figsize=(20, 10))
-        ax = fig.add_subplot(111)
-        plt.title(title, fontsize=40, y=1.04)
-        plt.xticks(fontsize=20)
-        plt.yticks(fontsize=20)
-        return fig, ax
-
-    fig1, ax1 = get_fig(1)
-    fig2, ax2 = get_fig(2)
-    fig3, ax3 = get_fig(3)
-    fig4, ax4 = get_fig(4)
+    mode_set = [('normal', 'normal'), ('normal', 'random'), ('normal', 'partially-0.1'),
+                ('normal', 'partially-0.3'), ('normal', 'partially-0.5'), ('normal', 'partially-0.7'),
+                ('normal', 'partially-0.9'), ('random', 'normal'), ('shuffled', 'normal')]
 
     for (mode1, mode2) in mode_set:
-        state = torch.load('./checkpoint_{}/{}_{}_ckpt_epoch_{}.t7'.format(title, mode1, mode2, num_epochs - 1))
-        log = state['log']
-        label = mode1 + '-' + mode2
-        ax1.plot(log.step_logger, log.loss_logger, linewidth=3, label=label)
-        ax2.plot(log.step_logger, log.acc_logger, linewidth=3, label=label)
-        ax3.plot(log.step_logger_test, log.loss_logger_test, linewidth=3, label=label)
-        ax4.plot(log.step_logger_test, log.acc_logger_test, linewidth=3, label=label)
+        print(mode1, ' and ', mode2, ' :')
+        img_transforms = transforms.Compose([transforms.ToTensor(),
+                                             transforms.Normalize(
+                                                 (0.4914, 0.4822, 0.4465),
+                                                 (0.2023, 0.1994, 0.2010))])
+        training_dataset = CIFAR10(root, train=True, transform=img_transforms, image_mode=mode1, label_mode=mode2)
+        training_loader = DataLoader(training_dataset, BATCH_SIZE, shuffle=True, pin_memory=True)
 
-    for ax in [ax1, ax2, ax3, ax4]:
-        ax.set_xlim(0, len(log.step_logger))
-        ax.set_xlabel('steps', fontdict=fontdict)
-        ax.legend(loc='upper right', fontsize=20)
+        testing_dataset = CIFAR10(root, train=False, transform=img_transforms)
+        testing_loader = DataLoader(testing_dataset, BATCH_SIZE, shuffle=False, pin_memory=True)
 
-    ax1.set_ylabel('train loss', fontdict=fontdict)
-    ax2.set_ylabel('train acc', fontdict=fontdict)
-    ax3.set_ylabel('test loss', fontdict=fontdict)
-    ax4.set_ylabel('test acc', fontdict=fontdict)
+        loaders = {'train': training_loader, 'test': testing_loader}
 
-    fig1.savefig(title + '-train-loss.png')
-    fig2.savefig(title + '-train-acc.png')
-    fig3.savefig(title + '-test-loss.png')
-    fig4.savefig(title + '-test-acc.png')
+        resnet18 = resnet.ResNet18()
+        vgg16 = vgg.VGG('VGG16')
+        alex = alexnet.alexnet()
+        inception = inceptions.GoogLeNet()
+
+        exec('model={}'.format(model_name))
+
+        if use_gpu:
+            model = resnet18.cuda()
+
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decay)
+        exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
+
+        mode = [mode1, mode2, model_name]
+        log = Logger(mode)
+
+        model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=num_epochs)
 
 
-plot(model_name)
-plt.show()
-plt.close()
+    def plot(title):
+        fontdict = {'size': 30}
+
+        def get_fig(i):
+            fig = plt.figure(i, figsize=(20, 10))
+            ax = fig.add_subplot(111)
+            plt.title(title, fontsize=40, y=1.04)
+            plt.xticks(fontsize=20)
+            plt.yticks(fontsize=20)
+            return fig, ax
+
+        fig1, ax1 = get_fig(1)
+        fig2, ax2 = get_fig(2)
+        fig3, ax3 = get_fig(3)
+        fig4, ax4 = get_fig(4)
+
+        for (mode1, mode2) in mode_set:
+            state = torch.load('./checkpoint_{}/{}_{}_ckpt_epoch_{}.t7'.format(title, mode1, mode2, num_epochs - 1))
+            log = state['log']
+            label = mode1 + '-' + mode2
+            ax1.plot(log.step_logger, log.loss_logger, linewidth=3, label=label)
+            ax2.plot(log.step_logger, log.acc_logger, linewidth=3, label=label)
+            ax3.plot(log.step_logger_test, log.loss_logger_test, linewidth=3, label=label)
+            ax4.plot(log.step_logger_test, log.acc_logger_test, linewidth=3, label=label)
+
+        for ax in [ax1, ax2, ax3, ax4]:
+            ax.set_xlim(0, log.step_logger[-1])
+            ax.set_xlabel('steps', fontdict=fontdict)
+            ax.legend(loc='upper right', fontsize=20)
+
+        ax1.set_ylabel('train loss', fontdict=fontdict)
+        ax2.set_ylabel('train acc', fontdict=fontdict)
+        ax3.set_ylabel('test loss', fontdict=fontdict)
+        ax4.set_ylabel('test acc', fontdict=fontdict)
+
+        result_dir = './results-{}/'.format(title)
+        if not os.path.exists(result_dir):
+            os.mkdir(result_dir)
+        fig1.savefig(result_dir + title + '-train-loss.png')
+        fig2.savefig(result_dir + title + '-train-acc.png')
+        fig3.savefig(result_dir + title + '-test-loss.png')
+        fig4.savefig(result_dir + title + '-test-acc.png')
+
+
+    plot(model_name)
+    plt.show()
+    plt.close()
