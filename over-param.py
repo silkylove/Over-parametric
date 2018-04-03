@@ -24,12 +24,12 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
     since = time.time()
     steps = 0
 
+    loss_meter = AverageMeter()
+    acc_meter = AverageMeter()
+
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch + 1, num_epochs))
         print('-' * 10)
-
-        loss_meter = AverageMeter()
-        acc_meter = AverageMeter()
 
         loss_meter_test = AverageMeter()
         acc_meter_test = AverageMeter()
@@ -117,7 +117,7 @@ weight_decay = 0.
 num_epochs = 60
 
 ## 'vgg16','resnet18','alex','inception'
-model_name = 'vgg16'
+model_name = 'resnet18'
 
 mode1_set = ['normal', 'random', 'shuffled']
 mode2_set = ['normal', 'random', 'partially']
