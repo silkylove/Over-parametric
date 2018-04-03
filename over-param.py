@@ -24,17 +24,14 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
     since = time.time()
     steps = 0
 
-    loss_meter = AverageMeter()
-    acc_meter = AverageMeter()
-
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch + 1, num_epochs))
         print('-' * 10)
 
-        loss_meter_test = AverageMeter()
-        acc_meter_test = AverageMeter()
-
         for phase in ['train', 'test']:
+
+            loss_meter = AverageMeter()
+            acc_meter = AverageMeter()
 
             if phase == 'train':
                 scheduler.step()
@@ -63,39 +60,27 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
                 if phase == 'train':
                     loss.backward()
                     optimizer.step()
-
-                    loss_meter.update(loss.data[0], outputs.size(0))
-                    acc_meter.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
                     steps += 1
-                    log_saver.log_train(steps, loss_meter.avg, acc_meter.avg)
 
-                else:
-                    loss_meter_test.update(loss.data[0], outputs.size(0))
-                    acc_meter_test.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
+                loss_meter.update(loss.data[0], outputs.size(0))
+                acc_meter.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
+
+            epoch_loss = loss_meter.avg
+            epoch_acc = acc_meter.avg
 
             if phase == 'train':
-                epoch_loss = loss_meter.avg
-                epoch_acc = acc_meter.avg
-
+                log_saver.log_train(steps, epoch_loss, epoch_acc)
             else:
-                epoch_loss = loss_meter_test.avg
-                epoch_acc = acc_meter_test.avg
-                log_saver.log_test(steps, loss_meter_test.avg, acc_meter_test.avg)
+                log_saver.log_test(steps, epoch_loss, epoch_acc)
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
-
-        print()
 
         if epoch % 10 == 0 or epoch == num_epochs - 1:
             print('Saving..')
             state = {
                 'net': model,
                 'epoch': epoch,
-                'loss': loss_meter.avg,
-                'acc': acc_meter.avg,
-                'loss_test': loss_meter_test.avg,
-                'acc_test': acc_meter_test.avg,
                 'log': log_saver
             }
 
