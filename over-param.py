@@ -136,14 +136,17 @@ for mode1 in mode1_set:
         alex = alexnet.alexnet()
         inception = inceptions.GoogLeNet()
 
-        model = resnet18
+        # here you need to change to another model
+        model = vgg16
         if use_gpu:
             model = resnet18.cuda()
 
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decay)
         exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
-        mode = [mode1, mode2, 'resnet']
+
+        # here to change the model name
+        mode = [mode1, mode2, 'vgg16']
         log = Logger(mode)
 
         model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=num_epochs)
@@ -190,7 +193,7 @@ def plot(title):
     fig3.savefig(title + '-test-loss.png')
     fig4.savefig(title + '-test-acc.png')
 
-
-plot('resnet')
+# here to change the title for figures
+plot('vgg16')
 plt.show()
 plt.close()
