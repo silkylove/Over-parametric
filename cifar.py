@@ -69,9 +69,9 @@ class CIFAR10(Dataset):
                 self.train_labels = self.train_labels
             elif label_mode == 'random':
                 self.train_labels = np.random.choice(range(10), 50000)
-            elif label_mode == 'partially':
-                p = 0.5
-                self.train_labels = [y if np.random.uniform() > p else np.random.randint(0, 10) for y in
+            elif label_mode.startswith('partially'):
+                p = float(label_mode.split('-')[1])
+                self.train_labels = [y if np.random.uniform() < p else np.random.randint(0, 10) for y in
                                      self.train_labels]
 
 
