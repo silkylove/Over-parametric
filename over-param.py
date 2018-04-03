@@ -113,6 +113,10 @@ lr = 0.1
 BATCH_SIZE = 128
 weight_decay = 0.
 num_epochs = 60
+
+## 'vgg16',‘resnet18’，‘alex’，‘inception’
+model_name = 'vgg16'
+
 mode1_set = ['normal', 'random', 'shuffled']
 mode2_set = ['normal', 'random', 'partially']
 
@@ -137,7 +141,7 @@ for mode1 in mode1_set:
         inception = inceptions.GoogLeNet()
 
         # here you need to change to another model
-        model = vgg16
+        exec('model={}'.format(model_name))
         if use_gpu:
             model = resnet18.cuda()
 
@@ -146,7 +150,7 @@ for mode1 in mode1_set:
         exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
 
         # here to change the model name
-        mode = [mode1, mode2, 'vgg16']
+        mode = [mode1, mode2, model_name]
         log = Logger(mode)
 
         model, log = train_model(model, criterion, optimizer, exp_lr_scheduler, log, mode, num_epochs=num_epochs)
@@ -193,7 +197,8 @@ def plot(title):
     fig3.savefig(title + '-test-loss.png')
     fig4.savefig(title + '-test-acc.png')
 
+
 # here to change the title for figures
-plot('vgg16')
+plot(model_name)
 plt.show()
 plt.close()
