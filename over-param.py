@@ -112,7 +112,7 @@ root = './'
 lr = 0.1
 BATCH_SIZE = 128
 weight_decay = 0.
-num_epochs = 1
+num_epochs = 60
 mode1_set = ['normal', 'random', 'shuffled']
 mode2_set = ['normal', 'random', 'partially']
 
@@ -150,10 +150,14 @@ for mode1 in mode1_set:
 
 
 def plot(title):
+    fontdict = {'size': 30}
+
     def get_fig(i):
         fig = plt.figure(i, figsize=(20, 10))
         ax = fig.add_subplot(111)
-        ax.set_title(title)
+        plt.title(title, fontsize=40, y=1.04)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
         return fig, ax
 
     fig1, ax1 = get_fig(1)
@@ -166,20 +170,20 @@ def plot(title):
             state = torch.load('./checkpoint_{}/{}_{}_ckpt_epoch_{}.t7'.format(title, mode1, mode2, num_epochs - 1))
             log = state['log']
             label = mode1 + '-' + mode2
-            ax1.plot(log.step_logger, log.loss_logger, label=label)
-            ax2.plot(log.step_logger, log.acc_logger, label=label)
-            ax3.plot(log.step_logger_test, log.loss_logger_test, label=label)
-            ax4.plot(log.step_logger_test, log.acc_logger_test, label=label)
+            ax1.plot(log.step_logger, log.loss_logger, linewidth=3, label=label)
+            ax2.plot(log.step_logger, log.acc_logger, linewidth=3, label=label)
+            ax3.plot(log.step_logger_test, log.loss_logger_test, linewidth=3, label=label)
+            ax4.plot(log.step_logger_test, log.acc_logger_test, linewidth=3, label=label)
 
     for ax in [ax1, ax2, ax3, ax4]:
         ax.set_xlim(0, len(log.step_logger))
-        ax.set_xlabel('steps')
-        ax.legend(loc='upper right')
+        ax.set_xlabel('steps', fontdict=fontdict)
+        ax.legend(loc='upper right', fontsize=20)
 
-    ax1.set_ylabel('train loss')
-    ax2.set_ylabel('train acc')
-    ax3.set_ylabel('test loss')
-    ax4.set_ylabel('test acc')
+    ax1.set_ylabel('train loss', fontdict=fontdict)
+    ax2.set_ylabel('train acc', fontdict=fontdict)
+    ax3.set_ylabel('test loss', fontdict=fontdict)
+    ax4.set_ylabel('test acc', fontdict=fontdict)
 
     fig1.savefig(title + '-train-loss.png')
     fig2.savefig(title + '-train-acc.png')
