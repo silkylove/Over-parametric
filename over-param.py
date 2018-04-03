@@ -140,7 +140,6 @@ for mode1 in mode1_set:
         alex = alexnet.alexnet()
         inception = inceptions.GoogLeNet()
 
-        # here you need to change to another model
         exec('model={}'.format(model_name))
         if use_gpu:
             model = resnet18.cuda()
@@ -149,7 +148,6 @@ for mode1 in mode1_set:
         optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decay)
         exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
 
-        # here to change the model name
         mode = [mode1, mode2, model_name]
         log = Logger(mode)
 
@@ -198,7 +196,6 @@ def plot(title):
     fig4.savefig(title + '-test-acc.png')
 
 
-# here to change the title for figures
 plot(model_name)
 plt.show()
 plt.close()
