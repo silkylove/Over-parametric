@@ -148,6 +148,7 @@ if __name__ == "__main__":
 
 
     def plot(title):
+
         fontdict = {'size': 30}
 
         def get_fig(i):
