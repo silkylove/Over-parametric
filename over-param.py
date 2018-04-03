@@ -98,6 +98,7 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
                 'acc_test': acc_meter_test.avg,
                 'log': log_saver
             }
+
             if not os.path.isdir('checkpoint_{}'.format(mode[2])):
                 os.mkdir('checkpoint_{}'.format(mode[2]))
             torch.save(state, './checkpoint_{}/{}_{}_ckpt_epoch_{}.t7'.format(mode[2], mode[0], mode[1], epoch))
