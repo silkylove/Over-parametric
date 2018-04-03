@@ -17,6 +17,9 @@ from cifar import CIFAR10
 from models import resnet, alexnet, inceptions, vgg
 from utils import AverageMeter, accuracy, Logger
 
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+
 use_gpu = torch.cuda.is_available()
 
 
@@ -100,9 +103,6 @@ lr = 0.1
 BATCH_SIZE = 128
 weight_decay = 0.
 num_epochs = 60
-
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 ## 'vgg16','resnet18','alex','inception'
 model_name = 'vgg16'
