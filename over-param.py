@@ -114,7 +114,7 @@ BATCH_SIZE = 128
 weight_decay = 0.
 num_epochs = 60
 
-## 'vgg16',‘resnet18’，‘alex’，‘inception’
+## 'vgg16','resnet18','alex','inception'
 model_name = 'vgg16'
 
 mode1_set = ['normal', 'random', 'shuffled']
