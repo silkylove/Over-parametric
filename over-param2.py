@@ -105,7 +105,7 @@ def train_model(model, criterion, optimizer, log_saver, num_epochs=70):
 model_name = 'CNN'
 
 root = './'
-lr = 0.01
+lr = 0.1
 BATCH_SIZE = 128
 weight_decay = 0.
 num_epochs = 70
@@ -128,7 +128,7 @@ log = {'num_params': [],
        'test_loss': [],
        'test_error': []}
 
-for channels in range(3, 160, 5):
+for channels in range(3, 200, 7):
     print('Now at {}.............'.format(channels))
     model = basic_cnn.CNN(channels)
 
