@@ -21,7 +21,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 
 root = './'
-
 mode_set = [('normal', 'normal'), ('normal', 'random'), ('normal', 'partially-0.1'),
             ('normal', 'partially-0.3'), ('normal', 'partially-0.5'), ('normal', 'partially-0.7'),
             ('normal', 'partially-0.9'), ('random', 'normal'), ('shuffled', 'normal')]
