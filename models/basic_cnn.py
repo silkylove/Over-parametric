@@ -22,8 +22,10 @@ class CNN(nn.Module):
         for i in range(5):
             if i == 0:
                 layers += [nn.Conv2d(in_channels, channels, 3, 2, 1),
+                           nn.BatchNorm2d(channels),
                            nn.ReLU(inplace=True)]
             else:
                 layers += [nn.Conv2d(channels, channels, 3, 2, 1),
+                           nn.BatchNorm2d(channels),
                            nn.ReLU(inplace=True)]
         return nn.Sequential(*layers)

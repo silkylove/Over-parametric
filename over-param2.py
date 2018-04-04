@@ -105,8 +105,8 @@ def train_model(model, criterion, optimizer, log_saver, num_epochs=70):
 model_name = 'CNN'
 
 root = './'
-lr = 0.1
-BATCH_SIZE = 128
+lr = 0.01
+BATCH_SIZE = 100
 weight_decay = 0.
 num_epochs = 70
 
