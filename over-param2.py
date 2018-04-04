@@ -174,8 +174,8 @@ def plot(title):
     result_dir = './results-{}/'.format(title)
     if not os.path.exists(result_dir):
         os.mkdir(result_dir)
-    fig1.savefig(result_dir + title + '-train-loss.png')
-    fig2.savefig(result_dir + title + '-train-error.png')
+    fig1.savefig(result_dir + title + '-loss.png')
+    fig2.savefig(result_dir + title + '-error.png')
 
 
 plot(model_name)
