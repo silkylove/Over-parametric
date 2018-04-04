@@ -177,7 +177,6 @@ def plot(title):
     fig1.savefig(result_dir + title + '-loss.png')
     fig2.savefig(result_dir + title + '-error.png')
 
-
 plot(model_name)
 plt.show()
 plt.close()
