@@ -18,7 +18,7 @@ from models import resnet, alexnet, inceptions, vgg
 from utils import AverageMeter, accuracy, Logger
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 use_gpu = torch.cuda.is_available()
 
@@ -98,9 +98,8 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
     return model, log_saver
 
 
-
 ## 'vgg16','resnet18','alex','inception'
-model_name = 'resnet18'
+model_name = 'inception'
 
 root = './'
 lr = 0.1
@@ -134,11 +133,13 @@ for (mode1, mode2) in mode_set:
     exec('model={}'.format(model_name))
 
     if use_gpu:
-        model = resnet18.cuda()
+        model = model.cuda()
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decay)
-    exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
+    # optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decay)
+    # exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
+    optimizer = optim.SGD(model.parameters(), lr=lr)
+    exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=1.)
 
     mode = [mode1, mode2, model_name]
     log = Logger(mode)
