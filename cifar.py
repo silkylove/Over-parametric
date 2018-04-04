@@ -63,7 +63,7 @@ class CIFAR10(Dataset):
             elif image_mode == 'gaussian':
                 mean = np.mean(np.mean(self.train_data.reshape((50000, -1)), axis=1))
                 std = np.mean(np.std(self.train_data.reshape((50000, -1)), axis=1))
-                self.train_data = np.random.rand((50000, 32, 32, 3)) * std + mean
+                self.train_data = np.random.rand(50000, 32, 32, 3) * std + mean
 
             if label_mode == 'normal':
                 self.train_labels = self.train_labels
