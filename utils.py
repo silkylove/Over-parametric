@@ -54,17 +54,17 @@ class Logger(object):
     def reset(self):
         self.step_logger = []
         self.loss_logger = []
-        self.acc_logger = []
+        self.error_logger = []
         self.step_logger_test = []
         self.loss_logger_test = []
-        self.acc_logger_test = []
+        self.error_logger_test = []
 
-    def log_train(self, step, loss, acc):
+    def log_train(self, step, loss, error):
         self.step_logger.append(step)
         self.loss_logger.append(loss)
-        self.acc_logger.append(acc)
+        self.error_logger.append(error)
 
-    def log_test(self, step, loss, acc):
+    def log_test(self, step, loss, error):
         self.step_logger_test.append(step)
         self.loss_logger_test.append(loss)
-        self.acc_logger_test.append(acc)
+        self.error_logger_test.append(error)

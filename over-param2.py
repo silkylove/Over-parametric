@@ -68,20 +68,20 @@ def train_model(model, criterion, optimizer, log_saver, num_epochs=70):
                 acc_meter.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
 
             epoch_loss = loss_meter.avg
-            epoch_acc = acc_meter.avg
+            epoch_error = 1-acc_meter.avg/100
 
             if phase == 'train' and epoch == num_epochs - 1:
 
                 log_saver['train_loss'].append(epoch_loss)
-                log_saver['train_error'].append(1-epoch_acc/100)
+                log_saver['train_error'].append(epoch_error)
 
             elif phase == 'test' and epoch == num_epochs - 1:
 
                 log_saver['test_loss'].append(epoch_loss)
-                log_saver['test_error'].append(1-epoch_acc/100)
+                log_saver['test_error'].append(epoch_error)
 
-            print('{} Loss: {:.4f} Acc: {:.4f}'.format(
-                phase, epoch_loss, epoch_acc))
+            print('{} Loss: {:.4f} Error: {:.4f}'.format(
+                phase, epoch_loss, epoch_error))
 
         if epoch % 30 == 0 or epoch == num_epochs - 1:
             print('Saving..')
@@ -108,7 +108,7 @@ root = './'
 lr = 0.01
 BATCH_SIZE = 128
 weight_decay = 0.
-num_epochs = 10
+num_epochs = 70
 
 img_transforms = transforms.Compose([transforms.ToTensor(),
                                      transforms.Normalize(
@@ -128,7 +128,8 @@ log = {'num_params': [],
        'test_loss': [],
        'test_error': []}
 
-for channels in range(3, 20, 5):
+for channels in range(3, 160, 5):
+    print('Now at {}.............'.format(channels))
     model = basic_cnn.CNN(channels)
 
     number_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -157,8 +158,10 @@ def plot(title):
     fig1, ax1 = get_fig(1)
     fig2, ax2 = get_fig(2)
 
-    ax1.plot(log['num_params'], log['train_loss'],log['test_loss'], linewidth=3, label=['training','test'])
-    ax2.plot(log['num_params'], log['train_error'],log['test_error'], linewidth=3, label=['training','test'])
+    ax1.plot(log['num_params'], log['train_loss'], linewidth=3, label='training')
+    ax1.plot(log['num_params'], log['test_loss'], linewidth=3, label='test')
+    ax2.plot(log['num_params'], log['train_error'], linewidth=3, label='training')
+    ax2.plot(log['num_params'], log['test_error'], linewidth=3, label='test')
 
     for ax in [ax1, ax2]:
         ax.set_xlim(0, log['num_params'][-1])
@@ -172,7 +175,8 @@ def plot(title):
     if not os.path.exists(result_dir):
         os.mkdir(result_dir)
     fig1.savefig(result_dir + title + '-train-loss.png')
-    fig2.savefig(result_dir + title + '-train-acc.png')
+    fig2.savefig(result_dir + title + '-train-error.png')
+
 
 plot(model_name)
 plt.show()

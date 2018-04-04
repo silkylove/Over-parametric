@@ -18,7 +18,7 @@ from models import resnet, alexnet, inceptions, vgg
 from utils import AverageMeter, accuracy, Logger
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 use_gpu = torch.cuda.is_available()
 
@@ -69,15 +69,15 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
                 acc_meter.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
 
             epoch_loss = loss_meter.avg
-            epoch_acc = acc_meter.avg
+            epoch_error = 1 - acc_meter.avg / 100
 
             if phase == 'train':
-                log_saver.log_train(steps, epoch_loss, epoch_acc)
+                log_saver.log_train(steps, epoch_loss, epoch_error)
             else:
-                log_saver.log_test(steps, epoch_loss, epoch_acc)
+                log_saver.log_test(steps, epoch_loss, epoch_error)
 
-            print('{} Loss: {:.4f} Acc: {:.4f}'.format(
-                phase, epoch_loss, epoch_acc))
+            print('{} Loss: {:.4f} Error: {:.4f}'.format(
+                phase, epoch_loss, epoch_error))
 
         if epoch % 10 == 0 or epoch == num_epochs - 1:
             print('Saving..')
@@ -99,7 +99,7 @@ def train_model(model, criterion, optimizer, scheduler, log_saver, mode, num_epo
 
 
 ## 'vgg16','resnet18','alex','inception'
-model_name = 'inception'
+model_name = 'alex'
 
 root = './'
 lr = 0.1
@@ -168,9 +168,9 @@ def plot(title):
         log = state['log']
         label = mode1 + '-' + mode2
         ax1.plot(log.step_logger, log.loss_logger, linewidth=3, label=label)
-        ax2.plot(log.step_logger, log.acc_logger, linewidth=3, label=label)
+        ax2.plot(log.step_logger, log.error_logger, linewidth=3, label=label)
         ax3.plot(log.step_logger_test, log.loss_logger_test, linewidth=3, label=label)
-        ax4.plot(log.step_logger_test, log.acc_logger_test, linewidth=3, label=label)
+        ax4.plot(log.step_logger_test, log.error_logger_test, linewidth=3, label=label)
 
     for ax in [ax1, ax2, ax3, ax4]:
         ax.set_xlim(0, log.step_logger[-1])
@@ -178,17 +178,17 @@ def plot(title):
         ax.legend(loc='upper right', fontsize=20)
 
     ax1.set_ylabel('train loss', fontdict=fontdict)
-    ax2.set_ylabel('train acc', fontdict=fontdict)
+    ax2.set_ylabel('train error', fontdict=fontdict)
     ax3.set_ylabel('test loss', fontdict=fontdict)
-    ax4.set_ylabel('test acc', fontdict=fontdict)
+    ax4.set_ylabel('test error', fontdict=fontdict)
 
     result_dir = './results-{}/'.format(title)
     if not os.path.exists(result_dir):
         os.mkdir(result_dir)
     fig1.savefig(result_dir + title + '-train-loss.png')
-    fig2.savefig(result_dir + title + '-train-acc.png')
+    fig2.savefig(result_dir + title + '-train-error.png')
     fig3.savefig(result_dir + title + '-test-loss.png')
-    fig4.savefig(result_dir + title + '-test-acc.png')
+    fig4.savefig(result_dir + title + '-test-error.png')
 
 
 plot(model_name)
