@@ -18,7 +18,7 @@ from models import basic_cnn
 from utils import AverageMeter, accuracy, Logger
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 use_gpu = torch.cuda.is_available()
 
@@ -128,7 +128,7 @@ log = {'num_params': [],
        'test_loss': [],
        'test_error': []}
 
-for channels in range(3, 200, 7):
+for channels in list(range(3,120,3))+list(range(150,450,100)):
     print('Now at {}.............'.format(channels))
     model = basic_cnn.CNN(channels)
 
@@ -158,14 +158,14 @@ def plot(title):
     fig1, ax1 = get_fig(1)
     fig2, ax2 = get_fig(2)
 
-    ax1.plot(log['num_params'], log['train_loss'], linewidth=3, label='training')
-    ax1.plot(log['num_params'], log['test_loss'], linewidth=3, label='test')
-    ax2.plot(log['num_params'], log['train_error'], linewidth=3, label='training')
-    ax2.plot(log['num_params'], log['test_error'], linewidth=3, label='test')
+    ax1.plot(np.log10(log['num_params']), log['train_loss'], linewidth=3, label='training')
+    ax1.plot(np.log10(log['num_params']), log['test_loss'], linewidth=3, label='test')
+    ax2.plot(np.log10(log['num_params']), log['train_error'], linewidth=3, label='training')
+    ax2.plot(np.log10(log['num_params']), log['test_error'], linewidth=3, label='test')
 
     for ax in [ax1, ax2]:
-        ax.set_xlim(0, log['num_params'][-1])
-        ax.set_xlabel('Number of Params', fontdict=fontdict)
+        ax.set_xlim(2, 7)
+        ax.set_xlabel('10^ Number of Params', fontdict=fontdict)
         ax.legend(loc='lower left', fontsize=20)
 
     ax1.set_ylabel('Loss on CIFAR10', fontdict=fontdict)
