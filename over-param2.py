@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from torch.autograd import Variable
 from torch import nn, optim
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from cifar import CIFAR10
@@ -68,7 +69,7 @@ def train_model(model, criterion, optimizer, log_saver, num_epochs=70):
                 acc_meter.update(accuracy(outputs.data, labels.data)[-1][0], outputs.size(0))
 
             epoch_loss = loss_meter.avg
-            epoch_error = 1-acc_meter.avg/100
+            epoch_error = 1 - acc_meter.avg / 100
 
             if phase == 'train' and epoch == num_epochs - 1:
 
@@ -128,7 +129,9 @@ log = {'num_params': [],
        'test_loss': [],
        'test_error': []}
 
-for channels in list(range(3,120,3))+list(range(150,450,100)):
+num_channels = list(range(3, 120, 3)) + list(range(150, 450, 100))
+
+for channels in num_channels:
     print('Now at {}.............'.format(channels))
     model = basic_cnn.CNN(channels)
 
@@ -177,6 +180,46 @@ def plot(title):
     fig1.savefig(result_dir + title + '-loss.png')
     fig2.savefig(result_dir + title + '-error.png')
 
+
 plot(model_name)
 plt.show()
 plt.close()
+
+
+#### Analysis
+def get_prob(checkpoint_path):
+    probs_param = np.zeros((len(num_channels), 10000, 10))
+    checkpoints = [checkpoint for checkpoint in os.listdir(checkpoint_path)
+                   if int(checkpoint.split('_')[2]) == num_epochs - 1]
+    checkpoints = sorted(checkpoints, key=lambda x: int(x.split('_')[-1].split('.')[0]))
+    for i, checkpoint in enumerate(checkpoints):
+        model = torch.load(os.path.join(checkpoint_path, checkpoint))['net']
+        step = 0
+        for data in testing_loader:
+            inputs, _ = data
+            if use_gpu:
+                inputs = inputs.cuda()
+            inputs = Variable(inputs, volatile=True)
+
+            outputs = model(inputs)
+            probs = F.softmax(outputs, dim=-1).cpu().data.numpy()
+            probs_param[i, step:(step + probs.shape[0]), :] = probs
+            step += probs.shape[0]
+    return probs_param
+
+
+# get all the predictions and probs
+probs_param = get_prob('./checkpoint_CNN')
+prediction_param = np.stack([np.where(a.argmax(axis=1) == testing_dataset.test_labels, 1, 0) for a in probs_param])
+# in order to see how much percentage of data always predicted correctly over every 10 models
+a = [prediction_param[i] != prediction_param[i + 1] for i in range(41)]
+for i in range(10):
+    a = [a[j + 1] == a[j] for j in range(len(a) - 1)]
+a = [np.mean(a[i]) for i in range(len(a))]
+plt.figure()
+plt.plot(range(1, len(a) + 1), a)
+plt.title('Trend over every 2 models')
+plt.xlabel('Start Model')
+plt.ylabel('Percentage of Remaining')
+plt.savefig('Trend over every 2 models')
+plt.show()
