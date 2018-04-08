@@ -131,59 +131,60 @@ log = {'num_params': [],
 
 num_channels = list(range(3, 120, 3)) + list(range(150, 450, 100))
 
-for channels in num_channels:
-    print('Now at {}.............'.format(channels))
-    model = basic_cnn.CNN(channels)
 
-    number_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    log['num_params'].append(number_params)
-
-    if use_gpu:
-        model = model.cuda()
-
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=lr)
-
-    model, log = train_model(model, criterion, optimizer, log, num_epochs=num_epochs)
-
-
-def plot(title):
-    fontdict = {'size': 30}
-
-    def get_fig(i):
-        fig = plt.figure(i, figsize=(20, 10))
-        ax = fig.add_subplot(111)
-        plt.title(title, fontsize=40, y=1.04)
-        plt.xticks(fontsize=20)
-        plt.yticks(fontsize=20)
-        return fig, ax
-
-    fig1, ax1 = get_fig(1)
-    fig2, ax2 = get_fig(2)
-
-    ax1.plot(np.log10(log['num_params']), log['train_loss'], linewidth=3, label='training')
-    ax1.plot(np.log10(log['num_params']), log['test_loss'], linewidth=3, label='test')
-    ax2.plot(np.log10(log['num_params']), log['train_error'], linewidth=3, label='training')
-    ax2.plot(np.log10(log['num_params']), log['test_error'], linewidth=3, label='test')
-
-    for ax in [ax1, ax2]:
-        ax.set_xlim(2, 7)
-        ax.set_xlabel('10^ Number of Params', fontdict=fontdict)
-        ax.legend(loc='lower left', fontsize=20)
-
-    ax1.set_ylabel('Loss on CIFAR10', fontdict=fontdict)
-    ax2.set_ylabel('Error on CIFRA10', fontdict=fontdict)
-
-    result_dir = './results-{}/'.format(title)
-    if not os.path.exists(result_dir):
-        os.mkdir(result_dir)
-    fig1.savefig(result_dir + title + '-loss.png')
-    fig2.savefig(result_dir + title + '-error.png')
-
-
-plot(model_name)
-plt.show()
-plt.close()
+# for channels in num_channels:
+#     print('Now at {}.............'.format(channels))
+#     model = basic_cnn.CNN(channels)
+#
+#     number_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+#     log['num_params'].append(number_params)
+#
+#     if use_gpu:
+#         model = model.cuda()
+#
+#     criterion = nn.CrossEntropyLoss()
+#     optimizer = optim.SGD(model.parameters(), lr=lr)
+#
+#     model, log = train_model(model, criterion, optimizer, log, num_epochs=num_epochs)
+#
+#
+# def plot(title):
+#     fontdict = {'size': 30}
+#
+#     def get_fig(i):
+#         fig = plt.figure(i, figsize=(20, 10))
+#         ax = fig.add_subplot(111)
+#         plt.title(title, fontsize=40, y=1.04)
+#         plt.xticks(fontsize=20)
+#         plt.yticks(fontsize=20)
+#         return fig, ax
+#
+#     fig1, ax1 = get_fig(1)
+#     fig2, ax2 = get_fig(2)
+#
+#     ax1.plot(np.log10(log['num_params']), log['train_loss'], linewidth=3, label='training')
+#     ax1.plot(np.log10(log['num_params']), log['test_loss'], linewidth=3, label='test')
+#     ax2.plot(np.log10(log['num_params']), log['train_error'], linewidth=3, label='training')
+#     ax2.plot(np.log10(log['num_params']), log['test_error'], linewidth=3, label='test')
+#
+#     for ax in [ax1, ax2]:
+#         ax.set_xlim(2, 7)
+#         ax.set_xlabel('10^ Number of Params', fontdict=fontdict)
+#         ax.legend(loc='lower left', fontsize=20)
+#
+#     ax1.set_ylabel('Loss on CIFAR10', fontdict=fontdict)
+#     ax2.set_ylabel('Error on CIFRA10', fontdict=fontdict)
+#
+#     result_dir = './results-{}/'.format(title)
+#     if not os.path.exists(result_dir):
+#         os.mkdir(result_dir)
+#     fig1.savefig(result_dir + title + '-loss.png')
+#     fig2.savefig(result_dir + title + '-error.png')
+#
+#
+# plot(model_name)
+# plt.show()
+# plt.close()
 
 
 #### Analysis
@@ -211,15 +212,35 @@ def get_prob(checkpoint_path):
 # get all the predictions and probs
 probs_param = get_prob('./checkpoint_CNN')
 prediction_param = np.stack([np.where(a.argmax(axis=1) == testing_dataset.test_labels, 1, 0) for a in probs_param])
-# in order to see how much percentage of data always predicted correctly over every 10 models
+# in order to see how much percentage of data always predicted unchanged over every 10 models
 a = [prediction_param[i] != prediction_param[i + 1] for i in range(41)]
-for i in range(10):
+for i in range(1):
     a = [a[j + 1] == a[j] for j in range(len(a) - 1)]
-a = [np.mean(a[i]) for i in range(len(a))]
+a1 = [np.mean(a[i]) for i in range(len(a))]
 plt.figure()
-plt.plot(range(1, len(a) + 1), a)
+plt.plot(range(1, len(a1) + 1), a1)
 plt.title('Trend over every 2 models')
 plt.xlabel('Start Model')
-plt.ylabel('Percentage of Remaining')
-plt.savefig('Trend over every 2 models')
+plt.ylabel('Percentage of Remaining Unchanged')
+plt.savefig('Trend over every 2 models Unchanged')
+plt.show()
+
+# in order to see how much percentage of data always predicted correctly over every 10 models
+a2 = [np.mean(a[i] * (prediction_param[i] == 1)) for i in range(len(a))]
+plt.figure()
+plt.plot(range(1, len(a2) + 1), a2)
+plt.title('Trend over every 2 models')
+plt.xlabel('Start Model')
+plt.ylabel('Percentage of Remaining Correct')
+plt.savefig('Trend over every 2 models Correct')
+plt.show()
+
+# in order to see how much percentage of data always predicted error over every 10 models
+a3 = [np.mean(a[i] * (prediction_param[i] == 0)) for i in range(len(a))]
+plt.figure()
+plt.plot(range(1, len(a3) + 1), a3)
+plt.title('Trend over every 2 models')
+plt.xlabel('Start Model')
+plt.ylabel('Percentage of Remaining Mistake')
+plt.savefig('Trend over every 2 models Mistake')
 plt.show()
