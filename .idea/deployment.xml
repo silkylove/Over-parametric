@@ -5,7 +5,7 @@
       <paths name="ssh://yhuangcc@gpu1.math.ust.hk:22/usr/local/anaconda3/envs/tensorflow/bin/python">
         <serverdata>
           <mappings>
-            <mapping deploy="/PycharmRemote/Project2" local="$PROJECT_DIR$" />
+            <mapping deploy="/PycharmRemote/Project2" local="$PROJECT_DIR$/../Project2" />
           </mappings>
         </serverdata>
       </paths>
