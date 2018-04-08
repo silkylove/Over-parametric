@@ -131,7 +131,7 @@ log = {'num_params': [],
 
 num_channels = list(range(3, 120, 3)) + list(range(150, 450, 100))
 
-
+#%% run the model
 for channels in num_channels:
     print('Now at {}.............'.format(channels))
     model = basic_cnn.CNN(channels)
@@ -186,7 +186,7 @@ plot(model_name)
 plt.show()
 plt.close()
 
-
+#%% run the analysis
 ###################### Analysis
 def get_prob(checkpoint_path):
     probs_param = np.zeros((len(num_channels), 10000, 10))
@@ -212,6 +212,8 @@ def get_prob(checkpoint_path):
 # get all the predictions and probs
 probs_param = get_prob('./checkpoint_CNN')
 prediction_param = np.stack([np.where(a.argmax(axis=1) == testing_dataset.test_labels, 1, 0) for a in probs_param])
+
+#%% do some analysis
 # in order to see how much percentage of data always predicted unchanged over every 10 models
 a = [prediction_param[i] != prediction_param[i + 1] for i in range(41)]
 for i in range(1):
