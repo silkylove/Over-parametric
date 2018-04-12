@@ -215,34 +215,34 @@ prediction_param = np.stack([np.where(a.argmax(axis=1) == testing_dataset.test_l
 
 #%% do some analysis
 # in order to see how much percentage of data always predicted unchanged over every 10 models
-a = [prediction_param[i] != prediction_param[i + 1] for i in range(41)]
-for i in range(1):
+a = [prediction_param[i] == prediction_param[i + 1] for i in range(41)]
+for i in range(10):
     a = [a[j + 1] == a[j] for j in range(len(a) - 1)]
 a1 = [np.mean(a[i]) for i in range(len(a))]
 plt.figure()
 plt.plot(range(1, len(a1) + 1), a1)
-plt.title('Trend over every 2 models')
+plt.title('Trend over every 10 models')
 plt.xlabel('Start Model')
 plt.ylabel('Percentage of Remaining Unchanged')
-plt.savefig('Trend over every 2 models Unchanged')
+plt.savefig('Trend over every 10 models Unchanged')
 plt.show()
 
 # in order to see how much percentage of data always predicted correctly over every 10 models
 a2 = [np.mean(a[i] * (prediction_param[i] == 1)) for i in range(len(a))]
 plt.figure()
 plt.plot(range(1, len(a2) + 1), a2)
-plt.title('Trend over every 2 models')
+plt.title('Trend over every 10 models')
 plt.xlabel('Start Model')
 plt.ylabel('Percentage of Remaining Correct')
-plt.savefig('Trend over every 2 models Correct')
+plt.savefig('Trend over every 10 models Correct')
 plt.show()
 
 # in order to see how much percentage of data always predicted error over every 10 models
 a3 = [np.mean(a[i] * (prediction_param[i] == 0)) for i in range(len(a))]
 plt.figure()
 plt.plot(range(1, len(a3) + 1), a3)
-plt.title('Trend over every 2 models')
+plt.title('Trend over every 10 models')
 plt.xlabel('Start Model')
 plt.ylabel('Percentage of Remaining Mistake')
-plt.savefig('Trend over every 2 models Mistake')
+plt.savefig('Trend over every 10 models Mistake')
 plt.show()
