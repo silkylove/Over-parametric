@@ -221,27 +221,36 @@ k = 0.7
 a = [np.mean(prediction_param[i:i + d, :], axis=0) >= k for i in range(42 - d)]
 a1 = [np.mean(prediction_param[i:i + d, :], axis=0) == 1 for i in range(42 - d)]
 a2 = [np.mean(prediction_param[i:i + d, :], axis=0) == 0 for i in range(42 - d)]
+a3 = [np.mean(prediction_param[i:i + d, :], axis=0) <= 1 - k for i in range(42 - d)]
 
 plt.figure()
 plt.plot(range(1, len(a) + 1), [np.mean(i) for i in a])
-plt.title('Trend over every %d models', d)
+plt.title('Trend over every %d models' % d)
 plt.xlabel('Start Model')
 plt.ylabel('Percentage of 70% Remaining Correct')
-plt.savefig('Trend over 70% of every %d models Correct', d)
+plt.savefig('Trend over 70% of every {} models Correct'.format(d))
 plt.show()
 
+# plt.figure()
+# plt.plot(range(1, len(a1) + 1), [np.mean(i) for i in a1])
+# plt.title('Trend over every %d models' % d)
+# plt.xlabel('Start Model')
+# plt.ylabel('Percentage of Remaining Correct')
+# plt.savefig('Trend over every %d models Correct' % d)
+# plt.show()
+# # in order to see how much percentage of data always predicted error over every 10 models
+# plt.figure()
+# plt.plot(range(1, len(a2) + 1), [np.mean(i) for i in a2])
+# plt.title('Trend over every %d models' % d)
+# plt.xlabel('Start Model')
+# plt.ylabel('Percentage of Remaining Mistake')
+# plt.savefig('Trend over every %d models Mistake' % d)
+# plt.show()
+
 plt.figure()
-plt.plot(range(1, len(a1) + 1), [np.mean(i) for i in a1])
-plt.title('Trend over every %d models', d)
+plt.plot(range(1, len(a3) + 1), [np.mean(i) for i in a3])
+plt.title('Trend over every %d models' % d)
 plt.xlabel('Start Model')
-plt.ylabel('Percentage of Remaining Correct')
-plt.savefig('Trend over every %d models Correct', d)
-plt.show()
-# in order to see how much percentage of data always predicted error over every 10 models
-plt.figure()
-plt.plot(range(1, len(a2) + 1), [np.mean(i) for i in a2])
-plt.title('Trend over every %d models', d)
-plt.xlabel('Start Model')
-plt.ylabel('Percentage of Remaining Mistake')
-plt.savefig('Trend over every %d models Mistake', d)
+plt.ylabel('Percentage of 70% Remaining Mistake')
+plt.savefig('Trend over 70% of every %d models Mistake'.format(d))
 plt.show()
