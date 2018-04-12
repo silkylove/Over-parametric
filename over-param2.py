@@ -131,7 +131,7 @@ log = {'num_params': [],
 
 num_channels = list(range(3, 120, 3)) + list(range(150, 450, 100))
 
-#%% run the model
+# %% run the model
 for channels in num_channels:
     print('Now at {}.............'.format(channels))
     model = basic_cnn.CNN(channels)
@@ -186,7 +186,8 @@ plot(model_name)
 plt.show()
 plt.close()
 
-#%% run the analysis
+
+# %% run the analysis
 ###################### Analysis
 def get_prob(checkpoint_path):
     probs_param = np.zeros((len(num_channels), 10000, 10))
@@ -213,36 +214,34 @@ def get_prob(checkpoint_path):
 probs_param = get_prob('./checkpoint_CNN')
 prediction_param = np.stack([np.where(a.argmax(axis=1) == testing_dataset.test_labels, 1, 0) for a in probs_param])
 
-#%% do some analysis
+# %% do some analysis
 # in order to see how much percentage of data always predicted unchanged over every 10 models
-a = [prediction_param[i] == prediction_param[i + 1] for i in range(41)]
-for i in range(10):
-    a = [a[j + 1] == a[j] for j in range(len(a) - 1)]
-a1 = [np.mean(a[i]) for i in range(len(a))]
+d = 10
+k = 0.7
+a = [np.mean(prediction_param[i:i + d, :], axis=0) >= k for i in range(42 - d)]
+a1 = [np.mean(prediction_param[i:i + d, :], axis=0) == 1 for i in range(42 - d)]
+a2 = [np.mean(prediction_param[i:i + d, :], axis=0) == 0 for i in range(42 - d)]
+
 plt.figure()
-plt.plot(range(1, len(a1) + 1), a1)
-plt.title('Trend over every 10 models')
+plt.plot(range(1, len(a) + 1), [np.mean(i) for i in a])
+plt.title('Trend over every %d models', d)
 plt.xlabel('Start Model')
-plt.ylabel('Percentage of Remaining Unchanged')
-plt.savefig('Trend over every 10 models Unchanged')
+plt.ylabel('Percentage of 70% Remaining Correct')
+plt.savefig('Trend over 70% of every %d models Correct', d)
 plt.show()
 
-# in order to see how much percentage of data always predicted correctly over every 10 models
-a2 = [np.mean(a[i] * (prediction_param[i] == 1)) for i in range(len(a))]
 plt.figure()
-plt.plot(range(1, len(a2) + 1), a2)
-plt.title('Trend over every 10 models')
+plt.plot(range(1, len(a1) + 1), [np.mean(i) for i in a1])
+plt.title('Trend over every %d models', d)
 plt.xlabel('Start Model')
 plt.ylabel('Percentage of Remaining Correct')
-plt.savefig('Trend over every 10 models Correct')
+plt.savefig('Trend over every %d models Correct', d)
 plt.show()
-
 # in order to see how much percentage of data always predicted error over every 10 models
-a3 = [np.mean(a[i] * (prediction_param[i] == 0)) for i in range(len(a))]
 plt.figure()
-plt.plot(range(1, len(a3) + 1), a3)
-plt.title('Trend over every 10 models')
+plt.plot(range(1, len(a2) + 1), [np.mean(i) for i in a2])
+plt.title('Trend over every %d models', d)
 plt.xlabel('Start Model')
 plt.ylabel('Percentage of Remaining Mistake')
-plt.savefig('Trend over every 10 models Mistake')
+plt.savefig('Trend over every %d models Mistake', d)
 plt.show()
